@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hono Backend API - Интерактивные примеры</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .function { color: #61afef; }
+        .comment { color: #5c6370; font-style: italic; }
+        .number { color: #d19a66; }
+        .class-name { color: #e5c07b; }
+
+        .search-highlight {
+            background-color: #ffd700;
+            color: #000;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .section-card {
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .hidden-section {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                🚀 Hono Backend API
+            </h1>
+            <p class="text-xl text-white opacity-90">
+                Интерактивные примеры кода и упражнения
+            </p>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-8">
+            <div class="flex items-center gap-4">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="🔍 Поиск по примерам (например: 'GET', 'POST', 'Prisma', 'JWT')..."
+                    class="flex-1 px-4 py-3 rounded-lg border-2 border-white/30 bg-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/60 focus:bg-white/30"
+                    oninput="searchCode()"
+                />
+                <button
+                    onclick="clearSearch()"
+                    class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition"
+                >
+                    Очистить
+                </button>
+            </div>
+            <p class="text-white/70 text-sm mt-2">
+                Найдено примеров: <span id="searchCount" class="font-bold">0</span>
+            </p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-8">
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="filterSection('all')" class="filter-btn active text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">Все</button>
+                <button onclick="filterSection('hono')" class="filter-btn text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">Hono</button>
+                <button onclick="filterSection('prisma')" class="filter-btn text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">Prisma</button>
+                <button onclick="filterSection('zod')" class="filter-btn text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">Zod</button>
+                <button onclick="filterSection('jwt')" class="filter-btn text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">JWT</button>
+                <button onclick="filterSection('middleware')" class="filter-btn text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">Middleware</button>
+            </div>
+        </nav>
+
+        <!-- Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- HONO EXAMPLES -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🦁</span> Hono: Hello World
+                </h2>
+                <p class="text-gray-600 mb-3">Базовая структура приложения</p>
+                <div class="code-block searchable">
+<span class="keyword">import</span> { <span class="class-name">Hono</span> } <span class="keyword">from</span> <span class="string">'hono'</span>;
+
+<span class="keyword">const</span> <span class="function">app</span> = <span class="keyword">new</span> <span class="class-name">Hono</span>();
+
+<span class="function">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="function">c</span>) <span class="keyword">=></span> {
+  <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>({ <span class="string">message</span>: <span class="string">'Hello, World!'</span> });
+});
+
+<span class="keyword">export</span> <span class="keyword">default</span> {
+  <span class="string">port</span>: <span class="number">3000</span>,
+  <span class="string">fetch</span>: <span class="function">app</span>.<span class="string">fetch</span>,
+};
+                </div>
+            </div>
+
+            <!-- HONO CRUD -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🛣️</span> Hono: GET с параметром
+                </h2>
+                <p class="text-gray-600 mb-3">Получить ресурс по ID</p>
+                <div class="code-block searchable">
+<span class="keyword">app</span>.<span class="function">get</span>(<span class="string">'/api/users/:id'</span>, <span class="keyword">async</span> (<span class="function">c</span>) <span class="keyword">=></span> {
+  <span class="keyword">const</span> <span class="string">id</span> = <span class="function">c</span>.<span class="function">req</span>.<span class="function">param</span>(<span class="string">'id'</span>);
+
+  <span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">findUnique</span>({
+    where: { <span class="string">id</span> }
+  });
+
+  <span class="keyword">if</span> (!<span class="string">user</span>) {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Not found'</span> },
+      <span class="number">404</span>
+    );
+  }
+
+  <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(<span class="string">user</span>);
+});
+                </div>
+            </div>
+
+            <!-- HONO POST -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>📤</span> Hono: POST (создание)
+                </h2>
+                <p class="text-gray-600 mb-3">Создать новый ресурс</p>
+                <div class="code-block searchable">
+<span class="keyword">app</span>.<span class="function">post</span>(<span class="string">'/api/users'</span>, <span class="keyword">async</span> (<span class="function">c</span>) <span class="keyword">=></span> {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> <span class="string">body</span> = <span class="keyword">await</span> <span class="function">c</span>.<span class="function">req</span>.<span class="function">json</span>();
+
+    <span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">create</span>({
+      <span class="string">data</span>: <span class="string">body</span>
+    });
+
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(<span class="string">user</span>, <span class="number">201</span>);
+  } <span class="keyword">catch</span> (<span class="string">error</span>) {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Invalid data'</span> },
+      <span class="number">400</span>
+    );
+  }
+});
+                </div>
+            </div>
+
+            <!-- HONO MIDDLEWARE -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono middleware">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>⚙️</span> Hono: Middleware
+                </h2>
+                <p class="text-gray-600 mb-3">CORS и логирование</p>
+                <div class="code-block searchable">
+<span class="keyword">import</span> { <span class="string">cors</span> } <span class="keyword">from</span> <span class="string">'hono/cors'</span>;
+<span class="keyword">import</span> { <span class="string">logger</span> } <span class="keyword">from</span> <span class="string">'hono/logger'</span>;
+
+<span class="keyword">app</span>.<span class="function">use</span>(<span class="string">'*'</span>, <span class="function">cors</span>());
+<span class="keyword">app</span>.<span class="function">use</span>(<span class="string">'*'</span>, <span class="function">logger</span>());
+
+<span class="keyword">app</span>.<span class="function">use</span>(<span class="string">'/api/protected/*'</span>, <span class="keyword">async</span> (<span class="string">c</span>, <span class="string">next</span>) <span class="keyword">=></span> {
+  <span class="comment">// Проверка аутентификации</span>
+  <span class="keyword">const</span> <span class="string">auth</span> = <span class="function">c</span>.<span class="function">req</span>.<span class="function">header</span>(<span class="string">'Authorization'</span>);
+  <span class="keyword">if</span> (!<span class="string">auth</span>) {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>({ <span class="string">error</span>: <span class="string">'Unauthorized'</span> }, <span class="number">401</span>);
+  }
+  <span class="keyword">await</span> <span class="function">next</span>();
+});
+                </div>
+            </div>
+
+            <!-- PRISMA SCHEMA -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section prisma">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🗄️</span> Prisma: Schema
+                </h2>
+                <p class="text-gray-600 mb-3">Определение моделей БД</p>
+                <div class="code-block searchable">
+<span class="keyword">model</span> <span class="class-name">User</span> {
+  <span class="string">id</span>        <span class="keyword">String</span>    <span class="number">@id</span> <span class="number">@default</span>(<span class="function">cuid</span>())
+  <span class="string">email</span>     <span class="keyword">String</span>    <span class="number">@unique</span>
+  <span class="string">name</span>      <span class="keyword">String</span>
+  <span class="string">createdAt</span> <span class="keyword">DateTime</span>  <span class="number">@default</span>(<span class="function">now</span>())
+
+  <span class="string">posts</span>     <span class="class-name">Post</span>[]
+  <span class="number">@@map</span>(<span class="string">"users"</span>)
+}
+
+<span class="keyword">model</span> <span class="class-name">Post</span> {
+  <span class="string">id</span>     <span class="keyword">String</span> <span class="number">@id</span> <span class="number">@default</span>(<span class="function">cuid</span>())
+  <span class="string">title</span>  <span class="keyword">String</span>
+  <span class="string">userId</span> <span class="keyword">String</span>
+  <span class="string">user</span>   <span class="class-name">User</span>   <span class="number">@relation</span>(<span class="string">fields</span>: [<span class="string">userId</span>], <span class="string">references</span>: [<span class="string">id</span>])
+}
+                </div>
+            </div>
+
+            <!-- PRISMA CRUD -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section prisma">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>📝</span> Prisma: CRUD операции
+                </h2>
+                <p class="text-gray-600 mb-3">Работа с данными</p>
+                <div class="code-block searchable">
+<span class="comment">// CREATE</span>
+<span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">create</span>({
+  <span class="string">data</span>: { <span class="string">email</span>, <span class="string">name</span> }
+});
+
+<span class="comment">// READ</span>
+<span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">findUnique</span>({
+  <span class="string">where</span>: { <span class="string">id</span> }
+});
+
+<span class="comment">// READ MANY</span>
+<span class="keyword">const</span> <span class="string">users</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">findMany</span>({
+  <span class="string">skip</span>: <span class="number">0</span>, <span class="string">take</span>: <span class="number">10</span>
+});
+
+<span class="comment">// UPDATE</span>
+<span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">update</span>({
+  <span class="string">where</span>: { <span class="string">id</span> },
+  <span class="string">data</span>: { <span class="string">name</span> }
+});
+
+<span class="comment">// DELETE</span>
+<span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">delete</span>({
+  <span class="string">where</span>: { <span class="string">id</span> }
+});
+                </div>
+            </div>
+
+            <!-- ZOD SCHEMA -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section zod">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>✅</span> Zod: Валидация
+                </h2>
+                <p class="text-gray-600 mb-3">Определение схем</p>
+                <div class="code-block searchable">
+<span class="keyword">import</span> { <span class="string">z</span> } <span class="keyword">from</span> <span class="string">'zod'</span>;
+
+<span class="keyword">const</span> <span class="class-name">CreateUserSchema</span> = <span class="function">z</span>.<span class="function">object</span>({
+  <span class="string">email</span>: <span class="function">z</span>.<span class="function">string</span>().<span class="function">email</span>(),
+  <span class="string">name</span>: <span class="function">z</span>.<span class="function">string</span>()
+    .<span class="function">min</span>(<span class="number">1</span>, <span class="string">'Required'</span>)
+    .<span class="function">max</span>(<span class="number">100</span>, <span class="string">'Too long'</span>),
+  <span class="string">age</span>: <span class="function">z</span>.<span class="function">number</span>()
+    .<span class="function">int</span>()
+    .<span class="function">positive</span>()
+    .<span class="function">optional</span>(),
+});
+
+<span class="keyword">type</span> <span class="class-name">CreateUserInput</span> = <span class="function">z</span>.<span class="function">infer</span>&lt;<span class="keyword">typeof</span> <span class="class-name">CreateUserSchema</span>&gt;;
+                </div>
+            </div>
+
+            <!-- ZOD VALIDATION -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section zod">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🔍</span> Zod: Использование
+                </h2>
+                <p class="text-gray-600 mb-3">Валидация данных</p>
+                <div class="code-block searchable">
+<span class="keyword">try</span> {
+  <span class="keyword">const</span> <span class="string">data</span> = <span class="class-name">CreateUserSchema</span>.<span class="function">parse</span>(<span class="string">body</span>);
+  <span class="comment">// data типизирован как CreateUserInput</span>
+  <span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">create</span>({ <span class="string">data</span> });
+  <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(<span class="string">user</span>, <span class="number">201</span>);
+} <span class="keyword">catch</span> (<span class="string">error</span>) {
+  <span class="keyword">if</span> (<span class="string">error</span> <span class="keyword">instanceof</span> <span class="class-name">z</span>.<span class="class-name">ZodError</span>) {
+    <span class="keyword">const</span> <span class="string">messages</span> = <span class="string">error</span>.<span class="string">errors</span>
+      .<span class="function">map</span>(<span class="string">e</span> <span class="keyword">=></span> `${<span class="string">e</span>.<span class="string">path</span>}: ${<span class="string">e</span>.<span class="string">message</span>}`);
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>({ <span class="string">error</span>: <span class="string">messages</span> }, <span class="number">400</span>);
+  }
+}
+                </div>
+            </div>
+
+            <!-- JWT CREATE -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section jwt">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🔐</span> JWT: Создание токена
+                </h2>
+                <p class="text-gray-600 mb-3">Генерация JWT</p>
+                <div class="code-block searchable">
+<span class="keyword">import</span> <span class="string">jwt</span> <span class="keyword">from</span> <span class="string">'jsonwebtoken'</span>;
+
+<span class="keyword">function</span> <span class="function">createToken</span>(<span class="string">userId</span>: <span class="keyword">string</span>) {
+  <span class="keyword">return</span> <span class="string">jwt</span>.<span class="function">sign</span>(
+    { <span class="string">userId</span>, <span class="string">role</span>: <span class="string">'student'</span> },
+    <span class="string">process</span>.<span class="string">env</span>.<span class="string">JWT_SECRET</span>!,
+    { <span class="string">expiresIn</span>: <span class="string">'7d'</span> }
+  );
+}
+
+<span class="comment">// Использование</span>
+<span class="keyword">const</span> <span class="string">token</span> = <span class="function">createToken</span>(<span class="string">'user_123'</span>);
+<span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>({ <span class="string">token</span> });
+                </div>
+            </div>
+
+            <!-- JWT VERIFY -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section jwt middleware">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🔑</span> JWT: Проверка токена
+                </h2>
+                <p class="text-gray-600 mb-3">Middleware для защиты</p>
+                <div class="code-block searchable">
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">authMiddleware</span>(<span class="string">c</span>, <span class="string">next</span>) {
+  <span class="keyword">const</span> <span class="string">auth</span> = <span class="function">c</span>.<span class="function">req</span>.<span class="function">header</span>(<span class="string">'Authorization'</span>);
+  <span class="keyword">const</span> <span class="string">token</span> = <span class="string">auth</span>?.<span class="function">replace</span>(<span class="string">'Bearer '</span>, <span class="string">''</span>);
+
+  <span class="keyword">if</span> (!<span class="string">token</span>) {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Unauthorized'</span> },
+      <span class="number">401</span>
+    );
+  }
+
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> <span class="string">payload</span> = <span class="string">jwt</span>.<span class="function">verify</span>(<span class="string">token</span>, <span class="string">process</span>.<span class="string">env</span>.<span class="string">JWT_SECRET</span>!);
+    <span class="function">c</span>.<span class="function">set</span>(<span class="string">'userId'</span>, <span class="string">payload</span>.<span class="string">userId</span>);
+    <span class="keyword">await</span> <span class="function">next</span>();
+  } <span class="keyword">catch</span> {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Invalid token'</span> },
+      <span class="number">401</span>
+    );
+  }
+}
+
+<span class="comment">// Использование</span>
+<span class="function">app</span>.<span class="function">use</span>(<span class="string">'/api/protected/*'</span>, <span class="function">authMiddleware</span>);
+                </div>
+            </div>
+
+            <!-- ERROR HANDLING -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>⚠️</span> Обработка ошибок
+                </h2>
+                <p class="text-gray-600 mb-3">Try-catch и статус коды</p>
+                <div class="code-block searchable">
+<span class="keyword">app</span>.<span class="function">post</span>(<span class="string">'/api/users'</span>, <span class="keyword">async</span> (<span class="function">c</span>) <span class="keyword">=></span> {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> <span class="string">body</span> = <span class="keyword">await</span> <span class="function">c</span>.<span class="function">req</span>.<span class="function">json</span>();
+    <span class="keyword">const</span> <span class="string">data</span> = <span class="class-name">UserSchema</span>.<span class="function">parse</span>(<span class="string">body</span>);
+    <span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">createUser</span>(<span class="string">data</span>);
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(<span class="string">user</span>, <span class="number">201</span>);
+  } <span class="keyword">catch</span> (<span class="string">error</span>: <span class="keyword">any</span>) {
+    <span class="keyword">if</span> (<span class="string">error</span> <span class="keyword">instanceof</span> <span class="class-name">z</span>.<span class="class-name">ZodError</span>) {
+      <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+        { <span class="string">error</span>: <span class="string">'Validation failed'</span> },
+        <span class="number">400</span>
+      );
+    }
+    <span class="keyword">if</span> (<span class="string">error</span>.<span class="string">code</span> === <span class="string">'P2002'</span>) {
+      <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+        { <span class="string">error</span>: <span class="string">'Email already exists'</span> },
+        <span class="number">409</span>
+      );
+    }
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Internal server error'</span> },
+      <span class="number">500</span>
+    );
+  }
+});
+
+<span class="comment">// Глобальный обработчик</span>
+<span class="function">app</span>.<span class="function">onError</span>((<span class="string">err</span>, <span class="string">c</span>) <span class="keyword">=></span> {
+  <span class="function">console</span>.<span class="function">error</span>(<span class="string">err</span>);
+  <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+    { <span class="string">error</span>: <span class="string">'Internal server error'</span> },
+    <span class="number">500</span>
+  );
+});
+                </div>
+            </div>
+
+            <!-- FULL EXAMPLE -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono prisma zod jwt">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🎯</span> Полный пример: Login endpoint
+                </h2>
+                <p class="text-gray-600 mb-3">Интеграция всех компонентов</p>
+                <div class="code-block searchable">
+<span class="keyword">const</span> <span class="class-name">LoginSchema</span> = <span class="function">z</span>.<span class="function">object</span>({
+  <span class="string">email</span>: <span class="function">z</span>.<span class="function">string</span>().<span class="function">email</span>(),
+  <span class="string">password</span>: <span class="function">z</span>.<span class="function">string</span>().<span class="function">min</span>(<span class="number">8</span>),
+});
+
+<span class="function">app</span>.<span class="function">post</span>(<span class="string">'/api/auth/login'</span>, <span class="keyword">async</span> (<span class="function">c</span>) <span class="keyword">=></span> {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> <span class="string">body</span> = <span class="keyword">await</span> <span class="function">c</span>.<span class="function">req</span>.<span class="function">json</span>();
+    <span class="keyword">const</span> { <span class="string">email</span>, <span class="string">password</span> } = <span class="class-name">LoginSchema</span>.<span class="function">parse</span>(<span class="string">body</span>);
+
+    <span class="keyword">const</span> <span class="string">user</span> = <span class="keyword">await</span> <span class="function">prisma</span>.<span class="string">user</span>.<span class="function">findUnique</span>({ <span class="string">where</span>: { <span class="string">email</span> } });
+    <span class="keyword">if</span> (!<span class="string">user</span>) {
+      <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+        { <span class="string">error</span>: <span class="string">'Invalid credentials'</span> },
+        <span class="number">401</span>
+      );
+    }
+
+    <span class="keyword">const</span> <span class="string">token</span> = <span class="function">createToken</span>(<span class="string">user</span>.<span class="string">id</span>, <span class="string">user</span>.<span class="string">role</span>);
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>({ <span class="string">token</span>, <span class="string">user</span> });
+  } <span class="keyword">catch</span> (<span class="string">error</span>) {
+    <span class="keyword">return</span> <span class="function">c</span>.<span class="function">json</span>(
+      { <span class="string">error</span>: <span class="string">'Invalid request'</span> },
+      <span class="number">400</span>
+    );
+  }
+});
+                </div>
+            </div>
+
+            <!-- TESTING ENDPOINT -->
+            <div class="section-card bg-white rounded-2xl p-6 shadow-2xl section hono">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                    <span>🧪</span> Тестирование: curl примеры
+                </h2>
+                <p class="text-gray-600 mb-3">Как проверить endpoints</p>
+                <div class="code-block searchable">
+<span class="comment"># GET - получить пользователя</span>
+curl http://localhost:3000/api/users/123
+
+<span class="comment"># POST - создать пользователя</span>
+curl -X POST http://localhost:3000/api/users \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"email":"test@example.com","name":"Test"}'</span>
+
+<span class="comment"># POST - login и получить токен</span>
+TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"email":"user@example.com","password":"password123"}'</span> \
+  | jq -r <span class="string">'.token'</span>)
+
+<span class="comment"># GET - защищенный endpoint с токеном</span>
+curl http://localhost:3000/api/profile \
+  -H <span class="string">"Authorization: Bearer $TOKEN"</span>
+
+<span class="comment"># DELETE - удалить пользователя</span>
+curl -X DELETE http://localhost:3000/api/users/123 \
+  -H <span class="string">"Authorization: Bearer $TOKEN"</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let allCards = document.querySelectorAll('.section-card');
+
+        function searchCode() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            let count = 0;
+
+            allCards.forEach(card => {
+                const codeBlocks = card.querySelectorAll('.code-block');
+                let found = false;
+
+                codeBlocks.forEach(block => {
+                    const text = block.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        found = true;
+                    }
+                });
+
+                if (query === '' || found) {
+                    card.style.display = 'block';
+                    if (found && query !== '') count++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('searchCount').textContent = count;
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchCode();
+        }
+
+        function filterSection(section) {
+            const query = section === 'all' ? '' : section;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Filter cards
+            allCards.forEach(card => {
+                if (query === '') {
+                    card.style.display = 'block';
+                } else {
+                    card.classList.contains(query) ?
+                        card.style.display = 'block' :
+                        card.style.display = 'none';
+                }
+            });
+        }
+
+        // Make filter-btn styling work
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b =>
+                    b.classList.remove('bg-white', 'text-blue-600')
+                );
+                this.classList.add('bg-white', 'text-blue-600');
+            });
+        });
+    </script>
+</body>
+</html>

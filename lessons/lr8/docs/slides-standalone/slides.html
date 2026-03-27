@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend API with Hono + TypeScript</title>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="reveal.css">
+  <link rel="stylesheet" href="black.css">
+  <link rel="stylesheet" href="monokai.css">
+  <style>
+    .reveal h1, .reveal h2, .reveal h3 {
+      text-transform: none;
+    }
+
+    .reveal section img {
+      border: none;
+      box-shadow: none;
+      background: none;
+    }
+
+    .reveal pre {
+      width: 100%;
+      font-size: 0.38em;
+      line-height: 1.2;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .reveal code {
+      font-family: 'Courier New', monospace;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .two-columns ul {
+      list-style: none;
+    }
+
+    .two-columns li {
+      margin: 10px 0;
+    }
+
+    .highlight-box {
+      background: rgba(102, 126, 234, 0.2);
+      border-left: 4px solid #667eea;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .success-box {
+      background: rgba(76, 175, 80, 0.2);
+      border-left: 4px solid #4caf50;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .error-box {
+      background: rgba(244, 67, 54, 0.2);
+      border-left: 4px solid #f44336;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .text-small {
+      font-size: 0.8em;
+    }
+
+    .text-smaller {
+      font-size: 0.7em;
+    }
+
+    .logo {
+      width: 100px;
+      margin: 20px 0;
+    }
+
+    .flow-diagram {
+      background: rgba(50, 50, 50, 0.5);
+      border: 2px solid rgba(102, 126, 234, 0.5);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+
+    .flow-item {
+      display: inline-block;
+      background: rgba(102, 126, 234, 0.2);
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 0 5px;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    .flow-arrow {
+      color: #667eea;
+      font-size: 1em;
+      margin: 0 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Title -->
+      <section>
+        <h1>Backend API with Hono</h1>
+        <h3>TypeScript-first Web Framework</h3>
+        <p style="margin-top: 60px; font-size: 1.2em;">Занятие 8: Лекция</p>
+        <p style="margin-top: 20px; font-size: 1em; color: #aaa;">Теория Backend разработки</p>
+        <div class="highlight-box" style="margin-top: 40px;">
+          <p style="font-size: 0.9em;">Практическая работа будет на <strong>следующей неделе</strong></p>
+        </div>
+      </section>
+
+      <!-- Slide 2: Что мы будем делать -->
+      <section>
+        <h2>Сегодня узнаем:</h2>
+        <ul>
+          <li>🎯 Как устроен <strong>Hono</strong> фреймворк</li>
+          <li>🔧 Как создавать <strong>REST API</strong endpoints</li>
+          <li>💾 Как работает <strong>Prisma ORM</strong> и <strong>SQLite</strong></li>
+          <li>🔐 Как реализуется <strong>JWT аутентификация</strong></li>
+          <li>🔗 Как интегрировать <strong>backend с frontend</strong></li>
+        </ul>
+
+        <p style="margin-top: 20px; font-size: 0.85em; color: #aaa;">
+          Важно: Это не мобилка! Это реальный backend, который будет работать везде.
+        </p>
+      </section>
+
+      <!-- Slide 2.5: Опциональный слайд про LR5-6 -->
+      <section>
+        <h2>Что изменяем</h2>
+        <div class="two-columns">
+          <div>
+            <h3>Было (LR5-6)</h3>
+            <ul style="font-size: 0.85em;">
+              <li>✅ Использовали готовый API</li>
+              <li>✅ Mock-server или внешний</li>
+              <li>✅ GET/POST запросы</li>
+              <li>✅ React Query hooks</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Станет (LR8-9)</h3>
+            <ul style="font-size: 0.85em;">
+              <li>✅ Создадите свой API</li>
+              <li>✅ Ваш Hono backend</li>
+              <li>✅ Обработчики endpoints</li>
+              <li>✅ Type-safe с Prisma</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Архитектура приложения -->
+      <section>
+        <h2>Архитектура: Frontend + Backend</h2>
+        <div class="two-columns">
+          <div>
+            <h3>Frontend (LR1-7)</h3>
+            <ul style="font-size: 0.9em;">
+              <li>React + TypeScript</li>
+              <li>Vite + Tailwind</li>
+              <li>MobX + Zustand</li>
+              <li>Vitest + Playwright</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Backend (LR8)</h3>
+            <ul style="font-size: 0.9em;">
+              <li>Hono + TypeScript</li>
+              <li>Prisma ORM</li>
+              <li>SQLite Database</li>
+              <li>JWT Auth</li>
+            </ul>
+          </div>
+        </div>
+        <div class="flow-diagram">
+          <div style="margin-bottom: 10px;">
+            <span class="flow-item">Frontend</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">HTTP</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">Backend</span>
+          </div>
+          <div style="margin-top: 10px;">
+            <span class="flow-item">Backend</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">SQL</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">SQLite</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: Почему Hono? -->
+      <section>
+        <h2>Почему Hono?</h2>
+        <div class="success-box">
+          <strong>✅ Hono — это один из лучших вариантов для нас</strong>
+        </div>
+        <div class="two-columns" style="margin-top: 20px;">
+          <div>
+            <h4 style="font-size: 1.1em;">Hono</h4>
+            <ul style="font-size: 0.75em;">
+              <li>🚀 Очень быстро</li>
+              <li>📝 TypeScript-first</li>
+              <li>🎯 Минимальный setup</li>
+              <li>🔧 Встроена валидация</li>
+              <li>💻 Работает везде</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="font-size: 1.1em;">Express</h4>
+            <ul style="font-size: 0.75em;">
+              <li>⏱️ Медленнее</li>
+              <li>❓ TS поддержка слабая</li>
+              <li>🔧 Много настроек</li>
+              <li>⚙️ Нужны доп. плагины</li>
+              <li>✅ Но очень популярен</li>
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top: 20px; font-size: 0.8em; color: #aaa;">Hono используют в: Discord, Cloudflare Workers, Vercel Edge Functions</p>
+      </section>
+
+      <!-- Slide 5: Tech Stack -->
+      <section>
+        <h2>Технологический стек</h2>
+        <pre><code>Backend:
+├── Hono           - Web framework
+├── Prisma         - ORM для базы данных
+├── SQLite         - Файловая база (легко везде)
+├── TypeScript     - Типобезопасность везде
+├── Zod            - Validation + типы
+└── JWT            - Аутентификация
+
+Frontend:
+├── React + Vite  - уже знаете!
+├── MobX/Zustand  - состояние
+└── TypeScript    - типы</code></pre>
+      </section>
+
+      <!-- Slide 6: REST API Recap -->
+      <section>
+        <h2>REST API Напоминание</h2>
+        <table style="font-size: 0.85em; width: 100%;">
+          <tr style="background: rgba(102, 126, 234, 0.2);">
+            <th>Операция</th>
+            <th>HTTP Метод</th>
+            <th>Endpoint</th>
+            <th>Пример</th>
+          </tr>
+          <tr>
+            <td><strong>Create</strong></td>
+            <td>POST</td>
+            <td>/resources</td>
+            <td>POST /api/categories</td>
+          </tr>
+          <tr>
+            <td><strong>Read</strong></td>
+            <td>GET</td>
+            <td>/resources/:id</td>
+            <td>GET /api/categories/123</td>
+          </tr>
+          <tr>
+            <td><strong>Update</strong></td>
+            <td>PUT/PATCH</td>
+            <td>/resources/:id</td>
+            <td>PUT /api/categories/123</td>
+          </tr>
+          <tr>
+            <td><strong>Delete</strong></td>
+            <td>DELETE</td>
+            <td>/resources/:id</td>
+            <td>DELETE /api/categories/123</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- Slide 7: OpenAPI Schema -->
+      <section>
+        <h2>OpenAPI Schema уже есть!</h2>
+
+        <pre style="margin-top: 20px;"><code>lessons/lr5/quiz-api-schema.yaml</code></pre>
+        <div class="highlight-box" style="margin-top: 30px;">
+          <strong>Наша задача:</strong> Реализовать backend согласно этой схеме
+        </div>
+        <p style="margin-top: 30px; font-size: 0.9em;">Endpoints которые нужно реализовать:</p>
+        <ul style="font-size: 0.85em; margin-top: 15px; list-style: none;">
+          <li><code>/api/auth</code> - GitHub OAuth</li>
+          <li><code>/api/categories</code> - Темы/категории</li>
+          <li><code>/api/questions</code> - Вопросы</li>
+          <li><code>/api/sessions</code> - Игровые сессии</li>
+          <li><code>/api/admin</code> - Админские операции</li>
+        </ul>
+      </section>
+
+      <!-- Slide 8: Hono Hello World -->
+      <section>
+        <h2>Hono: Hello World</h2>
+        <pre><code class="typescript">import { Hono } from 'hono';
+
+const app = new Hono();
+
+// Простой endpoint
+app.get('/hello', (c) => {
+  return c.json({ message: 'Hello, World!' });
+});
+
+// С параметрами
+app.get('/users/:id', (c) => {
+  const id = c.req.param('id');
+  return c.json({ userId: id });
+});
+
+// POST с телом
+app.post('/users', async (c) => {
+  const body = await c.req.json();
+  return c.json({ created: body }, 201);
+});
+
+export default app;</code></pre>
+      </section>
+
+      <!-- Slide 9: Prisma ORM -->
+      <section>
+        <h2>Что такое Prisma ORM?</h2>
+        <p><strong>ORM</strong> = Object-Relational Mapping</p>
+        <div class="two-columns" style="margin-top: 30px;">
+          <div>
+            <h4>Без ORM (SQL)</h4>
+            <pre style="margin-top: 15px;"><code class="sql">SELECT * FROM users
+WHERE id = '123';</code></pre>
+            <p style="font-size: 0.8em; margin-top: 15px;">❌ Нет типов</p>
+            <p style="font-size: 0.8em;">❌ Хрупко</p>
+          </div>
+          <div>
+            <h4>С Prisma</h4>
+            <pre style="margin-top: 15px;"><code class="typescript">const user = await prisma
+  .user.findUnique({
+    where: { id: '123' }
+  });</code></pre>
+            <p style="font-size: 0.8em; margin-top: 15px;">✅ Type-safe!</p>
+            <p style="font-size: 0.8em;">✅ Меньше ошибок</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 10: Prisma Schema -->
+      <section>
+        <h2>Prisma Schema: Определение модели</h2>
+        <pre><code class="prisma">model User {
+  id            String    @id @default(cuid())
+  githubId      Int       @unique
+  githubUsername String   @unique
+  email         String?
+  role          UserRole  @default(STUDENT)
+  createdAt     DateTime  @default(now())
+
+  sessions      Session[]  // Один ко многим
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+model Session {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}</code></pre>
+        <p style="font-size: 0.85em; margin-top: 20px; color: #aaa;">Prisma генерирует TypeScript типы автоматически!</p>
+      </section>
+
+      <!-- Slide 11: Database Setup -->
+      <section>
+        <h2>Настройка базы данных</h2>
+        <pre><code class="bash"># 1. Инициализировать Prisma
+npm install @prisma/client prisma
+
+# 2. Создать .env
+DATABASE_URL="file:./dev.db"
+
+# 3. Написать schema.prisma
+
+# 4. Создать миграцию
+npx prisma migrate dev --name init
+
+# 5. Проверить результат
+npx prisma studio  # веб-интерфейс БД</code></pre>
+        <div class="success-box" style="margin-top: 30px;">
+          SQLite создаст файл <code>dev.db</code> в корне проекта
+        </div>
+      </section>
+
+      <!-- Slide 12: JWT Authentication -->
+      <section>
+        <h2>JWT (JSON Web Token)</h2>
+        <p style="margin-top: 20px;">JWT используется для безопасной аутентификации</p>
+        <pre style="margin-top: 30px;"><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ
+.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</code></pre>
+        <div class="two-columns" style="margin-top: 40px;">
+          <div>
+            <h4>✅ Что JWT делает:</h4>
+            <ul style="font-size: 0.75em;">
+              <li>Кодирует данные</li>
+              <li>Подписывается secret ключом</li>
+              <li>Защищён от подделок</li>
+              <li>Stateless (не нужна БД)</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Поток:</h4>
+            <ul style="font-size: 0.75em;">
+              <li>1️⃣ Пользователь логинится</li>
+              <li>2️⃣ Сервер генерирует JWT</li>
+              <li>3️⃣ Фронтенд сохраняет JWT</li>
+              <li>4️⃣ Фронтенд отправляет в header</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 13: JWT на практике -->
+      <section>
+        <h2>JWT на практике в Hono</h2>
+        <pre><code class="typescript">import jwt from 'jsonwebtoken';
+
+// Создать JWT
+function createToken(userId: string) {
+  return jwt.sign(
+    { userId },
+    process.env.JWT_SECRET!,
+    { expiresIn: '7d' }
+  );
+}
+
+// Проверить JWT
+function verifyToken(token: string) {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET!);
+  } catch (error) {
+    return null;
+  }
+}
+
+// Middleware для защиты endpoint
+app.use('/api/protected/*', async (c, next) => {
+  const auth = c.req.header('Authorization');
+  const token = auth?.replace('Bearer ', '');
+
+  if (!token) return c.json({ error: 'Unauthorized' }, 401);
+
+  const payload = verifyToken(token);
+  if (!payload) return c.json({ error: 'Invalid token' }, 401);
+
+  c.set('userId', payload.userId);
+  await next();
+});</code></pre>
+      </section>
+
+      <!-- Slide 13.5: Hono JWT Helper (идиоматичный способ) -->
+      <section>
+        <h2>JWT в Hono: молодежно</h2>
+        <p>Или использовать встроенный Hono JWT helper:</p>
+        <pre><code class="typescript">import { Hono } from 'hono';
+import { jwt } from 'hono/jwt';
+
+const app = new Hono();
+
+// Middleware - защита endpoint
+app.use('/api/protected/*', jwt({
+  secret: process.env.JWT_SECRET!
+}));
+
+// В handler получить payload
+app.get('/api/protected/me', (c) => {
+  const payload = c.get('jwtPayload');
+  return c.json({ userId: payload.userId });
+});
+
+// Создать токен (в обработчике логина)
+app.post('/api/auth/login', async (c) => {
+  const payload = { userId: user.id, role: user.role };
+  const token = await Jwt.sign(
+    payload,
+    process.env.JWT_SECRET!
+  );
+  return c.json({ token });
+});</code></pre>
+        <div class="success-box">
+          <strong>Преимущества:</strong> Меньше кода, встроено в Hono, оптимизировано
+        </div>
+      </section>
+
+      <!-- Slide 14: Zod Validation -->
+      <section>
+        <h2>Zod: Type-safe Validation</h2>
+        <pre><code class="typescript">import { z } from 'zod';
+
+// Определить schema
+const CreateCategorySchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  description: z.string().optional(),
+});
+
+// Использовать в handler
+app.post('/categories', async (c) => {
+  try {
+    const body = await c.req.json();
+
+    // Валидация + типизация!
+    const { name, slug, description } =
+      CreateCategorySchema.parse(body);
+
+    const category = await prisma.category.create({
+      data: { name, slug, description }
+    });
+
+    return c.json(category, 201);
+  } catch (error) {
+    return c.json({ error: 'BadRequest' }, 400);
+  }
+});</code></pre>
+      </section>
+
+      <!-- Slide 15: Handlers структура -->
+      <section>
+        <h2>Структура handlers</h2>
+        <pre><code class="typescript">// src/handlers/categories.ts
+import { Hono } from 'hono';
+import { prisma } from '../db/client';
+
+const router = new Hono();
+
+// GET /api/categories
+router.get('/', async (c) => {
+  const categories = await prisma.category.findMany();
+  return c.json({ categories });
+});
+
+// POST /api/categories
+router.post('/', async (c) => {
+  // валидация...
+  const category = await prisma.category.create({...});
+  return c.json(category, 201);
+});
+
+export default router;
+
+// В main app:
+import categoriesRoutes from './handlers/categories';
+app.route('/api/categories', categoriesRoutes);</code></pre>
+      </section>
+
+      <!-- Slide 16: Integration с Frontend -->
+      <section>
+        <h2>Интеграция с Frontend</h2>
+        <p>В фронтенд приложении замените mock API:</p>
+        <pre><code class="typescript">// Было (LR5-6)
+const API_URL = 'http://localhost:3001'; // mock-server
+
+// Теперь (LR8)
+const API_URL = 'http://localhost:3000'; // реальный backend</code></pre>
+        <p style="margin-top: 30px; font-size: 0.9em;">Всё работает:
+        <ul style="font-size: 0.85em;">
+          <li>Тесты тестируют реальный код</li>
+          <li>MobX store говорит с реальным backend</li>
+          <li>Данные сохраняются в SQLite</li>
+        </ul>
+      </section>
+
+      <!-- Slide 17: Запуск -->
+      <section>
+        <h2>Запуск приложения</h2>
+        <pre><code class="bash"># Terminal 1: Backend
+cd lessons/lr8/backend
+npm install
+npm run dev
+# Server runs on http://localhost:3000
+
+# Terminal 2: Frontend
+cd lessons/lr5  # или где ваш фронтенд
+npm run dev
+# App runs on http://localhost:5173</code></pre>
+        <div class="success-box" style="margin-top: 30px;">
+          <strong>✅ Готово!</strong> Откройте браузер на http://localhost:5173 и ваше приложение работает с реальным backend!
+        </div>
+      </section>
+
+      <!-- Slide 18: Endpoints которые нужны -->
+      <section>
+        <h2>Endpoints для реализации (LR8)</h2>
+        <ul style="font-size: 0.8em;">
+          <li><strong>Auth:</strong> POST /api/auth/github/callback, GET /api/auth/me</li>
+          <li><strong>Categories:</strong> GET /api/categories, POST /api/categories</li>
+          <li><strong>Questions:</strong> GET /api/questions, GET /api/admin/questions</li>
+          <li><strong>Sessions:</strong> POST /api/sessions, GET /api/sessions/:id, POST /api/sessions/:id/answers</li>
+          <li><strong>Admin:</strong> PUT /api/admin/users/:id/difficulty, POST /api/admin/answers/:id/grade</li>
+        </ul>
+        <div class="highlight-box" style="margin-top: 30px;">
+          <strong>Цель LR8:</strong> Реализовать ~60% endpoints
+        </div>
+      </section>
+
+      <!-- Slide 19: Error Handling -->
+      <section>
+        <h2>Правильная обработка ошибок</h2>
+        <pre><code class="typescript">// Плохо ❌
+app.post('/data', async (c) => {
+  const data = await someFunction(); // Что если error?
+  return c.json(data);
+});
+
+// Хорошо ✅
+app.post('/data', async (c) => {
+  try {
+    const body = await c.req.json();
+
+    // Валидация
+    const validated = MySchema.parse(body);
+
+    // Обработка
+    const result = await someFunction(validated);
+
+    return c.json(result, 200);
+  } catch (error) {
+    console.error(error);
+    return c.json({
+      error: 'BadRequest',
+      message: 'Invalid data'
+    }, 400);
+  }
+});</code></pre>
+      </section>
+
+      <!-- Slide 20: Common mistakes -->
+      <section>
+        <h2>Частые ошибки</h2>
+        <div class="error-box">
+          <strong>❌ Забыли await для async операций</strong>
+          <pre><code class="typescript">const user = prisma.user.findUnique({...}); // Ошибка!
+const user = await prisma.user.findUnique({...}); // Правильно</code></pre>
+        </div>
+        <div class="error-box">
+          <strong>❌ Забыли обработать ошибки валидации</strong>
+          <pre><code class="typescript">const data = schema.parse(body); // Может выбросить error!
+try {
+  const data = schema.parse(body);
+} catch (e) {
+  return c.json({ error: 'BadRequest' }, 400);
+}</code></pre>
+        </div>
+        <div class="error-box">
+          <strong>❌ Забыли вернуть ответ</strong>
+          <pre><code class="typescript">c.json(data); // Ошибка! Забыли return
+return c.json(data); // Правильно</code></pre>
+        </div>
+      </section>
+
+      <!-- Slide 21: Testing Backend -->
+      <section>
+        <h2>Тестирование Backend (Preview)</h2>
+        <p style="margin-top: 20px;">На LR10 будем писать тесты:</p>
+        <pre style="margin-top: 30px;"><code class="typescript">import { describe, it, expect } from 'vitest';
+import { testClient } from 'hono/testing';
+import app from '../src/index';
+
+describe('Categories API', () => {
+  it('GET /api/categories returns list', async () => {
+    const client = testClient(app);
+    const res = await client.api.categories.$get();
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('categories');
+  });
+});</code></pre>
+        <p style="font-size: 0.85em; margin-top: 20px; color: #aaa;">Но сейчас фокусимся на реализации!</p>
+      </section>
+
+      <!-- Slide 22: Performance Tips -->
+      <section>
+        <h2>Performance Tips</h2>
+        <ul style="font-size: 0.9em;">
+          <li><strong>Используйте select</strong> в Prisma для выбора только нужных полей</li>
+          <li><strong>Индексируйте часто используемые поля</strong> (githubId, slug)</li>
+          <li><strong>Кэшируйте категории</strong> (меняются редко)</li>
+          <li><strong>Пагинируйте списки</strong> (не берите миллион записей)</li>
+          <li><strong>Используйте connection pooling</strong> (если будет боль)</li>
+        </ul>
+        <pre style="margin-top: 30px;"><code class="typescript">// Хорошо: берем только нужные поля
+const categories = await prisma.category.findMany({
+  select: { id: true, name: true, slug: true }
+});
+
+// Хорошо: пагинация
+const categories = await prisma.category.findMany({
+  skip: (page - 1) * limit,
+  take: limit
+});</code></pre>
+      </section>
+
+      <!-- Slide 23: Security Best Practices -->
+      <section>
+        <h2>Security: Базовые правила</h2>
+        <ul style="font-size: 0.9em;">
+          <li><strong>Никогда не логируйте пароли и токены</strong></li>
+          <li><strong>Используйте .env для секретов</strong> (не в коде!)</li>
+          <li><strong>Валидируйте ВСЕ входные данные</strong> (SQL injection!)</li>
+          <li><strong>Используйте HTTPS в production</strong></li>
+          <li><strong>Проверяйте права доступа</strong> (admin vs student)</li>
+          <li><strong>Ограничивайте rate limits</strong> (потом на LR11)</li>
+        </ul>
+        <pre style="margin-top: 30px;"><code class="bash"># .env (никогда не в git!)
+JWT_SECRET="super-secret-key-change-in-production"
+DATABASE_URL="file:./dev.db"
+NODE_ENV="development"</code></pre>
+      </section>
+
+      <!-- Slide 24: Что дальше -->
+      <section>
+        <h2>После LR8</h2>
+        <div class="two-columns">
+          <div>
+            <h3>LR9: Database & Scoring</h3>
+            <ul style="font-size: 0.85em;">
+              <li>Scoring algorithm</li>
+              <li>Advanced Prisma</li>
+              <li>Transactions</li>
+              <li>Normalization</li>
+            </ul>
+          </div>
+          <div>
+            <h3>LR10: Testing</h3>
+            <ul style="font-size: 0.85em;">
+              <li>Vitest для backend</li>
+              <li>Integration tests</li>
+              <li>Coverage</li>
+              <li>Fixtures</li>
+            </ul>
+          </div>
+        </div>
+        <div class="highlight-box" style="margin-top: 40px;">
+          <strong>Прогресс:</strong> LR8 (Backend) → LR9 (DB) → LR10 (Testing) → LR11 (Docker) → LR12 (PWA) → LR13 (Итог)
+        </div>
+      </section>
+
+      <!-- Slide 25: Summary -->
+      <section>
+        <h2>Итоги</h2>
+        <div class="success-box">
+          <h3>✅ Сегодня вы узнали:</h3>
+          <ul style="font-size: 0.85em;">
+            <li>Hono фреймворк и как он работает</li>
+            <li>REST API и HTTP методы</li>
+            <li>Prisma ORM и SQLite</li>
+            <li>JWT аутентификация</li>
+            <li>Zod валидация</li>
+            <li>Интеграция backend с frontend</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="reveal.js"></script>
+  <script src="markdown.js"></script>
+  <script src="highlight.js"></script>
+  <script src="notes.js"></script>
+
+  <script>
+    Reveal.initialize({
+      hash: true,
+      center: true,
+      transition: 'slide',
+      width: 960,
+      height: 700,
+      margin: 0.1,
+      minScale: 0.2,
+      maxScale: 2.0,
+    });
+  </script>
+</body>
+</html>

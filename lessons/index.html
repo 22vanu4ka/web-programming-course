@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Профиль — повтори по образцу</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+      color: #1a202c;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background: #4299e1;
+      padding: 2.5rem 1.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #cbd5e0;
+      border: 4px solid white;
+      margin: 0 auto -50px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #4a5568;
+    }
+
+    .name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      margin-top: 50px;
+    }
+
+    .verified::after {
+      content: "✓";
+      display: inline-block;
+      background: #48bb78;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      line-height: 1.1;
+      margin-left: 6px;
+      transform: translateY(-1px);
+    }
+
+    .bio {
+      padding: 0 1.5rem 1.5rem;
+      text-align: center;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem 0;
+      border-top: 1px solid #edf2f7;
+      border-bottom: 1px solid #edf2f7;
+      margin: 0 1.5rem;
+    }
+
+    .stat-item strong {
+      display: block;
+      font-size: 1.25rem;
+      color: #2d3748;
+    }
+
+    .stat-item span {
+      font-size: 0.875rem;
+      color: #718096;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .btn--primary {
+      background: #4299e1;
+      color: white;
+    }
+
+    .btn--primary:hover:not(:disabled) {
+      background: #3182ce;
+      transform: translateY(-2px);
+    }
+
+    .btn--secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+
+    .btn--secondary:hover:not(:disabled) {
+      background: #cbd5e0;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn:focus {
+      outline: 2px solid #63b3ed;
+      outline-offset: 2px;
+    }
+
+    .portfolio {
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    .portfolio h3 {
+      margin-bottom: 1rem;
+      font-size: 1.125rem;
+      color: #2d3748;
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .portfolio-item {
+      aspect-ratio: 1;
+      background: #e2e8f0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: #718096;
+    }
+
+    @media (max-width: 480px) {
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-card">
+    <div class="header">
+      <div class="avatar">👨‍💻</div>
+      <h2 class="name verified">Алексей Иванов</h2>
+    </div>
+    <div class="bio">
+      Frontend-разработчик, люблю CSS и чистый код. Учу студентов делать красивые интерфейсы.
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <strong>42</strong>
+        <span>проекта</span>
+      </div>
+      <div class="stat-item">
+        <strong>18</strong>
+        <span>курсов</span>
+      </div>
+      <div class="stat-item">
+        <strong>5 лет</strong>
+        <span>опыта</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn--primary">Написать</button>
+      <button class="btn btn--secondary" disabled>В архиве</button>
+    </div>
+
+    <div class="portfolio">
+      <h3>Последние работы</h3>
+      <div class="portfolio-grid">
+        <div class="portfolio-item">📊</div>
+        <div class="portfolio-item">🛒</div>
+        <div class="portfolio-item">📱</div>
+        <div class="portfolio-item">🎮</div>
+        <div class="portfolio-item">📰</div>
+        <div class="portfolio-item">🎨</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
