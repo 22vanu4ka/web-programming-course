@@ -6,95 +6,30 @@ import * as React from 'react';
 import { StartScreen } from './StartScreen';
 import { FinishScreen } from './FinishScreen';
 import { GameScreen } from './Game';
-import { usePostApiSessions } from '../../generated/api/sessions/sessions';
-
 
 const Task4 = observer(() => {
+  const { gameStatus, score, correctAnswersCount, questions } =
+    gameStore;
 
   const theme = useUIStore((s) => s.theme);
   const soundEnabled = useUIStore((s) => s.soundEnabled);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
-  const createSession = usePostApiSessions();
-  const [sessionId, setSessionId] = React.useState<string | null>(null);
-  const { 
-      gameStatus, 
-      currentQuestion,
-      selectedAnswers, 
-      essayAnswer,
-      score, 
-      //progress,
-      //123,
-      questions,
-      correctAnswersCount,
-      //currentQuestionIndex,
-      //isLastQuestion,
-      //setEssayAnswer,
-    } = gameStore;
 
-  const handleStart = () => {
-      createSession.mutate(
-        {
-          data: {
-            questionCount: 5,
-            difficulty: 'medium'
-          }
-        },
-        {
-          onSuccess: (response) => {
-            setSessionId(response.sessionId);
-            // Загружаем вопросы в gameStore
-            gameStore.startGame(response.questions);
-          },
-          onError: (error) => {
-            console.error('Failed to create session:', error);
-          },
-        }
-      );
-    };
-
-  const handleNext = () => {
-    if (sessionId && currentQuestion) {
-      // Определяем тип вопроса и формируем данные для отправки
-      let answerData;
-      
-      if (currentQuestion.type === 'essay') {
-        // Для эссе отправляем текстовый ответ
-        answerData = {
-          questionId: currentQuestion.id as never as string,
-          text: essayAnswer || '' // Добавляем проверку на null/undefined
-        };
-      } else {
-        // Для вопросов с выбором отправляем выбранные варианты
-        answerData = {
-          questionId: currentQuestion.id as never as string,
-          selectedOptions: selectedAnswers
-        };
-      }
+  const handleStart = async () => {
+    try {
+      // Используем моковые данные для демонстрации
+      const { mockQuestions } = await import('../data/questions');
+      gameStore.startGame(mockQuestions as any);
+    } catch (error) {
+      console.error('Ошибка загрузки вопросов:', error);
+    }
+  };
   
-      // Отправляем ответ на сервер
-      submitAnswer.mutate(
-        {
-          sessionId,
-          data: answerData
-        },
-        {
-          onSuccess: (response) => {
-            // Обновляем счет на основе ответа сервера
-            if ('pointsEarned' in response) {
-              // const isCorrect = response.status === 'correct';
-              // ... обновляем результат ...
-            }
-            // Переходим к следующему вопросу
-            if (!gameStore.nextQuestion()) {
-              handleFinishGame();
-            };
-          },
-          onError: (error) => {
-            console.error('Failed to submit answer:', error);
-            gameStore.nextQuestion();
-          },
-        }
-      );
+  const handleNext = () => {
+    if (gameStore.isLastQuestion) {
+      gameStore.finishGame(); // завершаем игру
+    } else {
+      gameStore.nextQuestion(); // переходим к следующему вопросу
     }
   };
 

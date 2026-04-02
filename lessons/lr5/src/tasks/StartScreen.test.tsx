@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { StartScreen } from './StartScreen';
 
 describe('StartScreen', () => {
-  it('renders title and start button', () => {
+  it('renders title and start button', () => {   // Убедиться, что компонент отображает минимальный интерфейс
     render(
       <StartScreen
         theme="light"
@@ -17,7 +17,7 @@ describe('StartScreen', () => {
     expect(screen.getByText('Начать игру')).toBeInTheDocument();
   });
 
-  it('calls onStart when start button is clicked', () => {
+  it('calls onStart when start button is clicked', () => {   // Проверить, что при клике на кнопку действительно вызывается колбэк, переданный через пропс
     const mockStart = vi.fn();
 
     render(
@@ -34,7 +34,7 @@ describe('StartScreen', () => {
     expect(mockStart).toHaveBeenCalledTimes(1);
   });
 
-  it('calls toggleTheme when theme button clicked', () => {
+  it('calls toggleTheme when theme button clicked', () => {   // Убедиться, что переключение темы работает
     const mockToggle = vi.fn();
 
     render(

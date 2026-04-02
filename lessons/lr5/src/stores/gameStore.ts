@@ -29,66 +29,61 @@ class GameStore {
   };
   // Actions - методы для изменения состояния
 
-  startGame(questions: QuestionPreview[]) {
+  startGame = (questions: QuestionPreview[]) => {
     this.gameStatus = 'playing';
     this.questions = questions.map(item => ({...item, correctAnswer: -1, options: item.options ?? []}));
     this.currentQuestionIndex = 0;
     this.score = 0;
     this.selectedAnswers = [];
     this.answeredQuestions = [];
-  }
+  };
 
-  selectAnswer(answerIndex: number) {
+  selectAnswer = (answerIndex: number) => {
     // Проверяем, что ответ еще не был выбран и игра идет
     if (this.gameStatus !== 'playing') {
       return;
     }
 
-     // Проверяем, выбран ли уже этот ответ
-     if (this.selectedAnswers.includes(answerIndex)) {
-      // Ответ уже выбран - удаляем из массива
+    // Проверяем, выбран ли уже этот ответ
+    if (this.selectedAnswers.includes(answerIndex)) {
       this.selectedAnswers = this.selectedAnswers.filter(
-          selectedIndex => selectedIndex !== answerIndex
+        selectedIndex => selectedIndex !== answerIndex
       );
     } else {
-      // Ответ еще не выбран - добавляем в массив
       this.selectedAnswers.push(answerIndex);
     }
-  
+
     const currentQuestion = this.currentQuestion;
     if (!currentQuestion) return;
 
-    // Проверяем правильность ответа
     const isCorrect = answerIndex === currentQuestion.correctAnswer;
-    
+
     if (isCorrect) {
       this.score += this.getPointsForDifficulty(currentQuestion.difficulty);
     }
 
-    // Сохраняем в историю ответов
     this.answeredQuestions.push({
       questionId: currentQuestion.id,
       selectedAnswers: [...this.selectedAnswers],
       isCorrect: isCorrect
     });
-  }
+  };
 
-  nextQuestion() {
+  nextQuestion = () => {
     if (this.isLastQuestion) {
       return false;
     }
-
     this.currentQuestionIndex++;
     this.selectedAnswers = [];
     this.essayAnswer = '';
     return true;
-  }
+  };
 
   finishGame() {
     this.gameStatus = 'finished';
   }
 
-  resetGame() {
+  resetGame = () => {
     this.gameStatus = 'idle';
     this.questions = [];
     this.currentQuestionIndex = 0;
@@ -96,7 +91,7 @@ class GameStore {
     this.selectedAnswers = [];
     this.answeredQuestions = [];
     this.essayAnswer = '';
-  }
+  };
 
   // Вспомогательный метод для получения очков за сложность
   private getPointsForDifficulty(difficulty: string): number {
