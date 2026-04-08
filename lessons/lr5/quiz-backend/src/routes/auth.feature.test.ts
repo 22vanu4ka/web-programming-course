@@ -13,7 +13,7 @@ describe('Auth feature tests', () => {
   });
 
   afterAll(async () => {
-    await prisma.$disconnect();
+    await prisma.$disconnect();   // Закрывает соединение с базой данных,
   });
 
   it('should return token and user for test code', async () => {

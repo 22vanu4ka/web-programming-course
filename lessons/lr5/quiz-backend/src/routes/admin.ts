@@ -4,6 +4,8 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { adminMiddleware } from '../middleware/admin.js';
 import { QuestionSchema, GradeSchema } from '../utils/validation.js';
+import type { InputJsonValue } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export const admin = new Hono();
 
@@ -43,7 +45,7 @@ admin.post('/questions', async (c) => {
       points: data.points,
     };
     if (data.correctAnswer !== undefined) {
-      createData.correctAnswer = data.correctAnswer as Prisma.InputJsonValue;
+      createData.correctAnswer = data.correctAnswer as InputJsonValue;
     }
 
     const question = await prisma.question.create({ data: createData });
@@ -71,7 +73,7 @@ admin.put('/questions/:id', async (c) => {
     if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
     if (data.points !== undefined) updateData.points = data.points;
     if (data.correctAnswer !== undefined) {
-      updateData.correctAnswer = data.correctAnswer as Prisma.InputJsonValue;
+      updateData.correctAnswer = data.correctAnswer as InputJsonValue;
     }
 
     const question = await prisma.question.update({
@@ -84,7 +86,7 @@ admin.put('/questions/:id', async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.flatten() }, 400);
     }
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
       return c.json({ error: 'Question not found' }, 404);
     }
     console.error(error);
@@ -164,7 +166,7 @@ admin.post('/answers/:id/grade', async (c) => {
     const totalGrade = grades.reduce((sum, g) => sum + g, 0);
     const finalScore = Math.min(totalGrade, maxPoints);
 
-    const updatedAnswer = await prisma.$transaction(async (tx) => {
+    const updatedAnswer = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const ans = await tx.answer.update({
         where: { id: answerId },
         data: { score: finalScore, isCorrect: true },
@@ -178,10 +180,10 @@ admin.post('/answers/:id/grade', async (c) => {
         }
       });
 
-      const allGraded = sessionAnswers.every(a => a.score !== null);
+      const allGraded = sessionAnswers.every((a: any) => a.score !== null);
       if (allGraded) {
         const allAnswers = await tx.answer.findMany({ where: { sessionId } });
-        const totalScore = allAnswers.reduce((sum, a) => sum + (a.score || 0), 0);
+        const totalScore = allAnswers.reduce((sum: number, a: any) => sum + (a.score || 0), 0);
         await tx.session.update({
           where: { id: sessionId },
           data: { score: totalScore }
@@ -214,7 +216,7 @@ admin.get('/students/:userId/stats', async (c) => {
       return c.json({ studentId: userId, averageScore: 0, totalSessions: 0 });
     }
 
-    const totalScore = sessions.reduce((sum, s) => sum + (s.score || 0), 0);
+    const totalScore = sessions.reduce((sum: number, s: any) => sum + (s.score || 0), 0);
     const averageScore = totalScore / sessions.length;
 
     return c.json({ studentId: userId, averageScore, totalSessions: sessions.length });

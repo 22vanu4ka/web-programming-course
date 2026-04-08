@@ -9,7 +9,8 @@
     "test:feature": "vitest run src/routes/admin.feature.test.ts src/routes/auth.feature.test.ts src/routes/sessions.feature.test.ts",
     "test": "vitest run \"src/**/*.{unit,feature}.test.ts\"",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",

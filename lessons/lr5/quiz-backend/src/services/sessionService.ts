@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { scoringService } from './scoringService.js';
+import type { InputJsonValue } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export class SessionServiceError extends Error {
   constructor(
@@ -24,7 +26,7 @@ function isStringArray(value: unknown): value is string[] {
 
 export class SessionService {
   async submitAnswer(sessionId: string, questionId: string, userAnswer: string | string[]) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const session = await tx.session.findUnique({
         where: { id: sessionId },
       });
@@ -85,14 +87,14 @@ export class SessionService {
           data: {
             sessionId,
             questionId,
-            userAnswer: userAnswer as Prisma.InputJsonValue,
+            userAnswer: userAnswer as InputJsonValue,
             score,
             isCorrect,
           },
         });
       } catch (error) {
         if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error instanceof PrismaClientKnownRequestError &&
           error.code === "P2002"
         ) {
           throw new SessionServiceError("Answer already submitted", 409);
@@ -115,7 +117,7 @@ export class SessionService {
     answeredCount: number;
     createdAt: Date;
   }> {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Создаём сессию со сроком действия 1 час
       const session = await tx.session.create({
         data: {
@@ -165,7 +167,7 @@ export class SessionService {
   }
 
   async submitSession(sessionId: string) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Проверяет, что сессия существует, активна и не истекла
       const session = await tx.session.findUnique({
         where: { id: sessionId },
@@ -192,8 +194,8 @@ export class SessionService {
 
       // Суммирует баллы всех ответов
       const totalScore = session.answers
-        .filter((answer) => answer.score !== null)
-        .reduce((sum, answer) => sum + (answer.score ?? 0), 0);
+        .filter((answer: any) => answer.score !== null)
+        .reduce((sum: number, answer: any) => sum + (answer.score ?? 0), 0);
 
       //	Обновляет статус сессии на completed, устанавливает score и completedAt
       return tx.session.update({

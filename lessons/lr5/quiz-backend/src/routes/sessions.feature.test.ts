@@ -112,63 +112,63 @@ describe('Sessions feature tests', () => {
   });
 
   // Негативные тесты для сессий
-it('should return 401 when no token provided for creating session', async () => {
-  const request = new Request('http://localhost/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
+  it('should return 401 when no token provided for creating session', async () => {
+    const request = new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const res = await app.request(request);
+    expect(res.status).toBe(401);
   });
-  const res = await app.request(request);
-  expect(res.status).toBe(401);
-});
 
-it('should return 401 when no token provided for submitting answer', async () => {
-  const createRes = await app.request(
-    new Request('http://localhost/api/sessions', {
+  it('should return 401 when no token provided for submitting answer', async () => {
+    const createRes = await app.request(
+      new Request('http://localhost/api/sessions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+    );
+    const { sessionId, questions } = await createRes.json();
+    const questionId = questions[0].id;
+
+    const request = new Request(`http://localhost/api/sessions/${sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId, userAnswer: ['0'] }),
+    });
+    const res = await app.request(request);
+    expect(res.status).toBe(401);
+  });
+
+  it('should return 401 for invalid token on session endpoint', async () => {
+    const request = new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer invalid', 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const res = await app.request(request);
+    expect(res.status).toBe(401);
+  });
+
+  it('should return 400 for invalid answer format (number instead of array)', async () => {
+    const createRes = await app.request(
+      new Request('http://localhost/api/sessions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+    );
+    const { sessionId, questions } = await createRes.json();
+    const questionId = questions[0].id;
+
+    const request = new Request(`http://localhost/api/sessions/${sessionId}/answers`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    })
-  );
-  const { sessionId, questions } = await createRes.json();
-  const questionId = questions[0].id;
-
-  const request = new Request(`http://localhost/api/sessions/${sessionId}/answers`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ questionId, userAnswer: ['0'] }),
+      body: JSON.stringify({ questionId, userAnswer: 123 }),
+    });
+    const res = await app.request(request);
+    expect(res.status).toBe(400);
   });
-  const res = await app.request(request);
-  expect(res.status).toBe(401);
-});
-
-it('should return 401 for invalid token on session endpoint', async () => {
-  const request = new Request('http://localhost/api/sessions', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer invalid', 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  });
-  const res = await app.request(request);
-  expect(res.status).toBe(401);
-});
-
-it('should return 400 for invalid answer format (number instead of array)', async () => {
-  const createRes = await app.request(
-    new Request('http://localhost/api/sessions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    })
-  );
-  const { sessionId, questions } = await createRes.json();
-  const questionId = questions[0].id;
-
-  const request = new Request(`http://localhost/api/sessions/${sessionId}/answers`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ questionId, userAnswer: 123 }),
-  });
-  const res = await app.request(request);
-  expect(res.status).toBe(400);
-});
 });
